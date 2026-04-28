@@ -1,0 +1,1888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050510">
+<title>Yell Into the Void</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400;1,500&family=Inter:wght@300;400;500&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #050510;
+    --void-2: #0a0a18;
+    --paper: #f4f1ea;
+    --ink: #15151c;
+    --dim: #6b6a64;
+    --accent: #8a7fb8;
+    --serif: 'Cormorant Garamond', serif;
+    --sans: 'Inter', -apple-system, sans-serif;
+    --mono: 'JetBrains Mono', monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: var(--sans);
+    background: var(--paper);
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+
+  /* ============ Phone shell ============ */
+  .phone {
+    width: 100%;
+    max-width: 380px;
+    height: min(820px, calc(100vh - 32px));
+    background: var(--void);
+    border-radius: 44px;
+    padding: 10px;
+    position: relative;
+    box-shadow: 0 1px 0 #d3d1c7, 0 32px 64px -32px rgba(10,10,24,0.35);
+  }
+  .phone::before {
+    content: "";
+    position: absolute;
+    top: 18px; left: 50%;
+    transform: translateX(-50%);
+    width: 90px; height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 4px;
+    z-index: 100;
+  }
+  .screen-shell {
+    width: 100%;
+    height: 100%;
+    background: var(--void-2);
+    border-radius: 34px;
+    overflow: hidden;
+    position: relative;
+    color: white;
+  }
+
+  /* ============ Star field (shared) ============ */
+  .stars {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .stars circle { fill: #fff; }
+
+  /* ============ Screens ============ */
+  .screen {
+    position: absolute;
+    inset: 0;
+    padding: 38px 24px 28px;
+    display: flex;
+    flex-direction: column;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.6s ease, visibility 0s linear 0.6s;
+  }
+  .screen.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity 0.6s ease, visibility 0s linear 0s;
+  }
+  .screen.fading {
+    transition: opacity 0.4s ease, visibility 0s linear 0.4s;
+  }
+
+  /* ---- Top bar (used on most screens) ---- */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.45);
+    position: relative;
+    z-index: 2;
+  }
+  .topbar .crumb {
+    font-family: var(--sans);
+    letter-spacing: 0;
+    font-size: 11px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.5);
+    background: none;
+    border: none;
+    padding: 4px;
+  }
+  .topbar .crumb:hover { color: rgba(255,255,255,0.85); }
+  .topbar .gear {
+    font-size: 16px;
+    cursor: pointer;
+    color: rgba(255,255,255,0.45);
+    background: none;
+    border: none;
+    padding: 4px;
+  }
+  .topbar .gear:hover { color: rgba(255,255,255,0.85); }
+
+  /* ---- Buttons ---- */
+  .btn {
+    border: none;
+    border-radius: 999px;
+    padding: 14px;
+    font-size: 13px;
+    font-family: var(--sans);
+    cursor: pointer;
+    width: 100%;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn:active { transform: scale(0.98); }
+  .btn-solid {
+    background: #fff;
+    color: var(--void-2);
+    font-weight: 500;
+  }
+  .btn-solid:hover { background: rgba(255,255,255,0.92); }
+  .btn-outline {
+    background: rgba(255,255,255,0.08);
+    border: 0.5px solid rgba(255,255,255,0.22);
+    color: #fff;
+  }
+  .btn-outline:hover { background: rgba(255,255,255,0.14); }
+  .btn-ghost {
+    background: transparent;
+    color: rgba(255,255,255,0.4);
+    padding: 8px;
+    font-size: 12px;
+  }
+  .btn-ghost:hover { color: rgba(255,255,255,0.7); }
+
+  /* ============ Screen 1: Promise ============ */
+  #promise {
+    justify-content: space-between;
+    text-align: center;
+  }
+  #promise .ornament {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.4em;
+    color: rgba(255,255,255,0.4);
+    position: relative; z-index: 2;
+  }
+  #promise .center {
+    position: relative; z-index: 2;
+  }
+  #promise h1 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 28px;
+    line-height: 1.4;
+    margin-bottom: 32px;
+    animation: fadeUp 1s 0.3s both;
+  }
+  #promise .promises {
+    text-align: left;
+    max-width: 240px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  #promise .p {
+    font-family: var(--serif);
+    font-size: 15px;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.6;
+    opacity: 0;
+    animation: fadeUp 0.8s both;
+  }
+  #promise .p:nth-child(1) { animation-delay: 0.6s; }
+  #promise .p:nth-child(2) { animation-delay: 0.9s; }
+  #promise .p:nth-child(3) { animation-delay: 1.2s; }
+  #promise .p i {
+    color: rgba(255,255,255,0.4);
+    margin-right: 10px;
+    font-style: italic;
+  }
+  #promise .actions {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; gap: 8px;
+    animation: fadeUp 0.8s 1.6s both;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============ Screen 2: Home ============ */
+  #home {
+    justify-content: space-between;
+    text-align: center;
+  }
+  #home .center {
+    position: relative; z-index: 2;
+    margin: auto 0;
+  }
+  #home h1 {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 36px;
+    line-height: 1.25;
+    margin-bottom: 16px;
+  }
+  #home .tag {
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+  }
+  #home .actions {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  #home .counter {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+  }
+  #home .counter span { font-variant-numeric: tabular-nums; }
+
+  /* ============ Screen 3: Compose ============ */
+  #compose .compose-wrapper {
+    flex: 1;
+    margin: 24px 0 0;
+    border: 0.5px dashed rgba(255,255,255,0.22);
+    border-radius: 14px;
+    padding: 18px;
+    position: relative;
+    transition: border-color 0.3s;
+  }
+  #compose .compose-wrapper:focus-within {
+    border-color: rgba(255,255,255,0.4);
+  }
+  #compose textarea {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: white;
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.6;
+    resize: none;
+    caret-color: white;
+  }
+  #compose textarea::placeholder {
+    color: rgba(255,255,255,0.3);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 16px;
+  }
+  #compose .meta {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    margin: 14px 0;
+  }
+
+  /* ============ Screen 4: Launching ============ */
+  #launch {
+    padding: 0;
+    overflow: hidden;
+  }
+  #launch .launch-stars {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  #launch .ornament {
+    position: absolute;
+    top: 38px; left: 0; right: 0;
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.4em;
+    color: rgba(255,255,255,0.4);
+    z-index: 2;
+    opacity: 0;
+    animation: ornament-pulse 2.5s 0.3s ease both;
+  }
+  @keyframes ornament-pulse {
+    0% { opacity: 0; }
+    30% { opacity: 1; }
+    100% { opacity: 0; }
+  }
+  #launch .word-particle {
+    position: absolute;
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    color: white;
+    white-space: nowrap;
+    will-change: transform, opacity;
+    text-align: center;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  /* ============ Screen 5: Afterglow ============ */
+  #afterglow {
+    justify-content: center;
+    align-items: center;
+    gap: 24px;
+    text-align: center;
+  }
+  #afterglow .quote {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 26px;
+    line-height: 1.4;
+    color: white;
+    position: relative; z-index: 2;
+    max-width: 300px;
+    animation: fadeUp 1.2s 0.4s both;
+  }
+  #afterglow .small {
+    font-size: 12px;
+    color: rgba(255,255,255,0.45);
+    line-height: 1.6;
+    max-width: 260px;
+    position: relative; z-index: 2;
+    animation: fadeUp 1.2s 1s both;
+  }
+  #afterglow .glimpse {
+    border: 0.5px solid rgba(255,255,255,0.12);
+    border-radius: 14px;
+    padding: 14px 18px;
+    width: 100%;
+    max-width: 280px;
+    position: relative; z-index: 2;
+    animation: glimpse-drift 1.5s 1.5s both;
+    opacity: 0;
+  }
+  @keyframes glimpse-drift {
+    0% { opacity: 0; transform: translateX(-12px); }
+    25% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 1; transform: translateX(0); }
+  }
+  #afterglow .glimpse-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 6px;
+  }
+  #afterglow .glimpse-text {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 14px;
+    color: rgba(255,255,255,0.6);
+  }
+  #afterglow .actions {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 280px;
+    animation: fadeUp 1s 2s both;
+  }
+
+  /* ============ Screen 6: Crisis Fork ============ */
+  #crisis {
+    justify-content: center;
+    align-items: center;
+    gap: 22px;
+    text-align: center;
+  }
+  #crisis .heard {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 28px;
+    color: white;
+    position: relative; z-index: 2;
+    animation: fadeUp 1s 0.4s both;
+  }
+  #crisis .body {
+    font-family: var(--serif);
+    font-size: 16px;
+    color: rgba(255,255,255,0.75);
+    line-height: 1.7;
+    max-width: 260px;
+    position: relative; z-index: 2;
+    animation: fadeUp 1.2s 1.2s both;
+  }
+  #crisis .actions {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 280px;
+    margin-top: 8px;
+    animation: fadeUp 1s 2s both;
+  }
+
+  /* ============ Screen 7: Resource ============ */
+  #resource {
+    padding: 38px 24px 28px;
+  }
+  #resource .crumb-back {
+    font-family: var(--sans);
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 32px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 4px;
+    text-align: left;
+    align-self: flex-start;
+    position: relative; z-index: 2;
+  }
+  #resource .lead {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 18px;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.5;
+    margin-bottom: 28px;
+    position: relative; z-index: 2;
+  }
+  #resource .number-card {
+    border: 0.5px solid rgba(255,255,255,0.22);
+    border-radius: 14px;
+    padding: 20px;
+    background: rgba(255,255,255,0.03);
+    position: relative; z-index: 2;
+    margin-bottom: 12px;
+  }
+  #resource .num-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 6px;
+  }
+  #resource .num {
+    font-family: var(--serif);
+    font-size: 36px;
+    font-weight: 300;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  #resource .num-sub {
+    font-size: 12px;
+    color: rgba(255,255,255,0.55);
+  }
+  #resource .chat {
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 16px 20px;
+    position: relative; z-index: 2;
+  }
+  #resource .chat-link {
+    font-size: 13px;
+    color: rgba(255,255,255,0.85);
+  }
+  #resource .footer-note {
+    font-size: 11px;
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    line-height: 1.6;
+    margin-top: auto;
+    padding-top: 24px;
+    position: relative; z-index: 2;
+  }
+
+  /* ============ Screen 8: Settings ============ */
+  #settings .row {
+    border-top: 0.5px solid rgba(255,255,255,0.1);
+    padding: 16px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    color: white;
+    cursor: pointer;
+    position: relative; z-index: 2;
+  }
+  #settings .row:hover { color: rgba(255,255,255,0.7); }
+  #settings .row:last-of-type { border-bottom: 0.5px solid rgba(255,255,255,0.1); }
+  #settings .row .arr { color: rgba(255,255,255,0.35); font-size: 14px; }
+  #settings .footnote {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: rgba(255,255,255,0.3);
+    text-align: center;
+    margin-top: auto;
+    padding-top: 24px;
+    line-height: 1.7;
+    letter-spacing: 0.05em;
+    position: relative; z-index: 2;
+  }
+  #settings .settings-list {
+    margin-top: 28px;
+    position: relative; z-index: 2;
+  }
+
+  /* ============ Screen 3.5: Void Picker ============ */
+  #picker .picker-header {
+    margin-top: 8px;
+    margin-bottom: 20px;
+    position: relative; z-index: 2;
+  }
+  #picker .picker-eyebrow {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 6px;
+  }
+  #picker .picker-title {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 1.3;
+    color: white;
+  }
+  #picker .void-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    overflow: hidden;
+    position: relative; z-index: 2;
+  }
+  #picker .void-option {
+    background: rgba(255,255,255,0.04);
+    border: 0.5px solid rgba(255,255,255,0.15);
+    border-radius: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    transition: background 0.2s, border-color 0.2s, transform 0.1s;
+  }
+  #picker .void-option:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.3);
+  }
+  #picker .void-option:active { transform: scale(0.99); }
+  #picker .void-option.selected {
+    background: rgba(255,255,255,0.1);
+    border-color: rgba(255,255,255,0.45);
+  }
+  #picker .void-icon {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    background: #050510;
+  }
+  #picker .void-meta { flex: 1; min-width: 0; }
+  #picker .void-name {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 16px;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 2px;
+  }
+  #picker .void-desc {
+    font-size: 11px;
+    color: rgba(255,255,255,0.5);
+    line-height: 1.4;
+  }
+  #picker .picker-back {
+    margin-top: 12px;
+    position: relative; z-index: 2;
+  }
+
+  /* ============ Themed launch backgrounds ============ */
+  /* Default (space) keeps existing #launch behavior */
+
+  #launch.theme-ocean .launch-stars,
+  #launch.theme-volcano .launch-stars,
+  #launch.theme-blackhole .launch-stars,
+  #launch.theme-past .launch-stars { display: none; }
+
+  #launch.theme-ocean {
+    background: linear-gradient(180deg, #0a1626 0%, #050a14 100%);
+  }
+  #launch.theme-ocean .ornament { color: rgba(160, 200, 230, 0.55); }
+  #launch.theme-ocean .word-particle { color: rgba(220, 240, 255, 0.95); }
+
+  #launch.theme-volcano {
+    background: radial-gradient(ellipse at 50% 100%, #4a1a0c 0%, #1a0a08 50%, #050304 100%);
+  }
+  #launch.theme-volcano .ornament { color: rgba(232, 168, 124, 0.7); }
+  #launch.theme-volcano .word-particle {
+    color: #ffd9a8;
+    text-shadow: 0 0 12px rgba(255, 140, 60, 0.5), 0 0 24px rgba(255, 100, 30, 0.3);
+  }
+
+  #launch.theme-blackhole {
+    background: radial-gradient(circle at 50% 45%, #1a0a24 0%, #0a0510 40%, #050208 100%);
+  }
+  #launch.theme-blackhole .ornament { color: rgba(184, 174, 220, 0.6); }
+  #launch.theme-blackhole .word-particle { color: rgba(220, 210, 240, 0.95); }
+  #launch.theme-blackhole::after {
+    content: "";
+    position: absolute;
+    top: 45%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px; height: 20px;
+    background: radial-gradient(circle, #050208 0%, transparent 70%);
+    border-radius: 50%;
+    box-shadow: 0 0 60px 30px rgba(0,0,0,0.95), 0 0 120px 60px rgba(80,60,120,0.15);
+    z-index: 1;
+    animation: bh-pulse 3s ease-in-out infinite;
+  }
+  @keyframes bh-pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(1); }
+    50% { transform: translate(-50%, -50%) scale(1.15); }
+  }
+
+  #launch.theme-past {
+    background: radial-gradient(ellipse at 50% 50%, #2a2418 0%, #15110a 70%, #0a0805 100%);
+  }
+  #launch.theme-past .ornament { color: rgba(220, 180, 130, 0.55); }
+  #launch.theme-past .word-particle {
+    color: #d4b896;
+    font-family: var(--serif);
+    text-shadow: 0 0 6px rgba(180,140,80,0.3);
+  }
+  #launch.theme-past::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(60,40,20,0.4) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 80%, rgba(80,50,20,0.3) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 1;
+    animation: past-grain 8s ease-in-out infinite;
+  }
+  @keyframes past-grain {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.9; }
+  }
+
+  /* Bubble for ocean theme */
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.6), rgba(180,210,235,0.15));
+    border: 0.5px solid rgba(220,240,255,0.3);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Ember for volcano theme */
+  .ember {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, #ffaa55 0%, #ff5500 50%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
+    will-change: transform, opacity;
+  }
+
+  /* ============ Screen 9: Constellation (rare) ============ */
+  #constellation {
+    background: #050514;
+    overflow: hidden;
+  }
+  #constellation .const-stars {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+  #constellation .rare-tag {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.45em;
+    color: rgba(184,174,220,0.85);
+    position: relative; z-index: 2;
+    margin-top: 4px;
+    animation: fadeUp 1.2s 0.2s both;
+  }
+  #constellation .rare-sub {
+    text-align: center;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    color: rgba(255,255,255,0.4);
+    margin-top: 6px;
+    position: relative; z-index: 2;
+    animation: fadeUp 1.2s 0.5s both;
+  }
+  #constellation .const-svg-wrap {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    margin-top: 12px;
+  }
+  #constellation .const-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  #constellation .const-line {
+    stroke: rgba(184,174,220,0.55);
+    stroke-width: 0.6;
+    fill: none;
+    stroke-dasharray: 200;
+    stroke-dashoffset: 200;
+    animation: line-draw 1.4s ease forwards;
+  }
+  @keyframes line-draw {
+    to { stroke-dashoffset: 0; }
+  }
+  #constellation .const-anchor {
+    fill: #fff;
+  }
+  #constellation .const-glow {
+    fill: #fff;
+    opacity: 0;
+    animation: glow-in 0.8s ease forwards;
+  }
+  @keyframes glow-in {
+    to { opacity: 0.18; }
+  }
+  #constellation .const-letter {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 16px;
+    fill: #fff;
+    opacity: 0;
+    animation: fade-letter 0.6s ease forwards;
+  }
+  @keyframes fade-letter {
+    to { opacity: 0.95; }
+  }
+  #constellation .const-bottom {
+    position: relative; z-index: 2;
+    text-align: center;
+  }
+  #constellation .const-label {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 8px;
+    animation: fadeUp 1s 2.4s both;
+  }
+  #constellation .const-name {
+    font-family: var(--serif);
+    font-style: italic;
+    font-weight: 400;
+    font-size: 30px;
+    line-height: 1.1;
+    margin-bottom: 8px;
+    color: white;
+    animation: fadeUp 1.4s 2.6s both;
+  }
+  #constellation .const-meta {
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 11px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 20px;
+    animation: fadeUp 1s 3s both;
+  }
+  #constellation .const-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    animation: fadeUp 1s 3.4s both;
+  }
+  #constellation .btn-const {
+    background: rgba(184,174,220,0.14);
+    border: 0.5px solid rgba(184,174,220,0.35);
+    color: #fff;
+  }
+  #constellation .btn-const:hover { background: rgba(184,174,220,0.22); }
+  #constellation .countdown {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: rgba(255,255,255,0.4);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+
+  /* ============ Reset hint (dev only) ============ */
+  .dev-hint {
+    position: fixed;
+    bottom: 14px; left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: rgba(0,0,0,0.4);
+    letter-spacing: 0.05em;
+    pointer-events: none;
+    text-align: center;
+    line-height: 1.6;
+  }
+  .dev-hint span {
+    display: inline-block;
+    background: rgba(255,255,255,0.6);
+    padding: 2px 8px;
+    border-radius: 4px;
+    border: 0.5px solid rgba(0,0,0,0.1);
+  }
+
+  /* ============ Reduced motion ============ */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="screen-shell" id="shell">
+
+    <!-- Persistent star background -->
+    <svg class="stars" id="bg-stars" viewBox="0 0 380 820" preserveAspectRatio="none"></svg>
+
+    <!-- ===== Screen 1: Privacy Promise ===== -->
+    <div class="screen active" id="promise">
+      <div class="ornament">⋆ &nbsp; THE VOID &nbsp; ⋆</div>
+      <div class="center">
+        <h1>the void promises<br/>three things.</h1>
+        <div class="promises">
+          <div class="p"><i>i.</i>what you say does not leave this device.</div>
+          <div class="p"><i>ii.</i>we do not know who you are.</div>
+          <div class="p"><i>iii.</i>we never will.</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-solid" data-go="home">begin</button>
+        <button class="btn btn-ghost" data-go="settings">how we prove this →</button>
+      </div>
+    </div>
+
+    <!-- ===== Screen 2: Home ===== -->
+    <div class="screen" id="home">
+      <div class="topbar">
+        <span>THE VOID</span>
+        <button class="gear" data-go="settings" aria-label="settings">⚙</button>
+      </div>
+      <div class="center">
+        <h1>say it.<br/>let it go.</h1>
+        <div class="tag">nothing is saved. ever.</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline" data-go="compose">begin →</button>
+        <div class="counter"><span id="yell-count">847,293</span> things yelled today</div>
+      </div>
+    </div>
+
+    <!-- ===== Screen 3: Compose ===== -->
+    <div class="screen" id="compose">
+      <div class="topbar">
+        <button class="crumb" data-go="home">← back</button>
+        <span>SPEAK</span>
+        <span style="visibility:hidden;">&nbsp;</span>
+      </div>
+      <div class="compose-wrapper">
+        <textarea id="yell-input" placeholder="say it. anything. nothing is saved." autofocus></textarea>
+      </div>
+      <div class="meta">no character limit · nothing leaves this device</div>
+      <button class="btn btn-solid" id="launch-btn" disabled style="opacity:0.4;">choose destination →</button>
+    </div>
+
+    <!-- ===== Screen 3.5: Void Picker ===== -->
+    <div class="screen" id="picker">
+      <div class="topbar">
+        <button class="crumb" data-go="compose">← back</button>
+        <span>CHOOSE</span>
+        <span style="visibility:hidden;">&nbsp;</span>
+      </div>
+      <div class="picker-header">
+        <div class="picker-eyebrow">⋆ &nbsp; WHERE SHOULD IT GO &nbsp; ⋆</div>
+        <div class="picker-title">pick a destination<br/>for your words.</div>
+      </div>
+      <div class="void-list">
+        <div class="void-option selected" data-void="space">
+          <div class="void-icon" id="icon-space">
+            <svg viewBox="0 0 40 40" width="40" height="40">
+              <rect width="40" height="40" fill="#0a0a18"/>
+              <circle cx="8" cy="10" r="0.6" fill="#fff" opacity="0.8"/>
+              <circle cx="28" cy="6" r="0.8" fill="#fff" opacity="0.7"/>
+              <circle cx="20" cy="18" r="0.5" fill="#fff" opacity="0.6"/>
+              <circle cx="32" cy="22" r="0.6" fill="#fff" opacity="0.8"/>
+              <circle cx="12" cy="28" r="0.7" fill="#fff" opacity="0.6"/>
+              <circle cx="24" cy="32" r="0.5" fill="#fff" opacity="0.7"/>
+              <circle cx="6" cy="22" r="0.4" fill="#fff" opacity="0.5"/>
+            </svg>
+          </div>
+          <div class="void-meta">
+            <div class="void-name">outer space</div>
+            <div class="void-desc">drift, shrink, vanish in the dark</div>
+          </div>
+        </div>
+        <div class="void-option" data-void="ocean">
+          <div class="void-icon" id="icon-ocean">
+            <svg viewBox="0 0 40 40" width="40" height="40">
+              <defs>
+                <linearGradient id="ocean-grad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#0a1626"/>
+                  <stop offset="100%" stop-color="#020610"/>
+                </linearGradient>
+              </defs>
+              <rect width="40" height="40" fill="url(#ocean-grad)"/>
+              <circle cx="10" cy="14" r="2" fill="none" stroke="rgba(220,240,255,0.5)" stroke-width="0.5"/>
+              <circle cx="28" cy="22" r="1.4" fill="none" stroke="rgba(220,240,255,0.6)" stroke-width="0.5"/>
+              <circle cx="20" cy="30" r="1" fill="none" stroke="rgba(220,240,255,0.4)" stroke-width="0.5"/>
+              <circle cx="14" cy="34" r="0.7" fill="none" stroke="rgba(220,240,255,0.5)" stroke-width="0.5"/>
+            </svg>
+          </div>
+          <div class="void-meta">
+            <div class="void-name">deep ocean</div>
+            <div class="void-desc">sink slowly, dissolve into bubbles</div>
+          </div>
+        </div>
+        <div class="void-option" data-void="volcano">
+          <div class="void-icon" id="icon-volcano">
+            <svg viewBox="0 0 40 40" width="40" height="40">
+              <defs>
+                <radialGradient id="volc-grad" cx="50%" cy="100%" r="80%">
+                  <stop offset="0%" stop-color="#5a1f0c"/>
+                  <stop offset="60%" stop-color="#1a0a08"/>
+                  <stop offset="100%" stop-color="#050304"/>
+                </radialGradient>
+              </defs>
+              <rect width="40" height="40" fill="url(#volc-grad)"/>
+              <circle cx="14" cy="28" r="0.9" fill="#ffaa55" opacity="0.9"/>
+              <circle cx="22" cy="20" r="0.6" fill="#ff8833" opacity="0.85"/>
+              <circle cx="26" cy="14" r="0.5" fill="#ffcc77" opacity="0.7"/>
+              <circle cx="18" cy="10" r="0.4" fill="#ffaa55" opacity="0.6"/>
+              <circle cx="30" cy="26" r="0.7" fill="#ff7722" opacity="0.8"/>
+              <circle cx="10" cy="18" r="0.4" fill="#ffaa55" opacity="0.5"/>
+            </svg>
+          </div>
+          <div class="void-meta">
+            <div class="void-name">volcano</div>
+            <div class="void-desc">rise as embers, burn up, blow away</div>
+          </div>
+        </div>
+        <div class="void-option" data-void="blackhole">
+          <div class="void-icon" id="icon-blackhole">
+            <svg viewBox="0 0 40 40" width="40" height="40">
+              <defs>
+                <radialGradient id="bh-grad" cx="50%" cy="50%" r="60%">
+                  <stop offset="0%" stop-color="#000"/>
+                  <stop offset="40%" stop-color="#1a0a24"/>
+                  <stop offset="100%" stop-color="#0a0510"/>
+                </radialGradient>
+              </defs>
+              <rect width="40" height="40" fill="url(#bh-grad)"/>
+              <circle cx="20" cy="20" r="13" fill="none" stroke="#8a7fb8" stroke-width="0.4" opacity="0.5" stroke-dasharray="1 2"/>
+              <circle cx="20" cy="20" r="9" fill="none" stroke="#b8aedc" stroke-width="0.3" opacity="0.7"/>
+              <circle cx="20" cy="20" r="3" fill="#000"/>
+              <circle cx="20" cy="20" r="3.5" fill="none" stroke="#b8aedc" stroke-width="0.3" opacity="0.9"/>
+            </svg>
+          </div>
+          <div class="void-meta">
+            <div class="void-name">black hole</div>
+            <div class="void-desc">spiral inward, stretch, oblivion</div>
+          </div>
+        </div>
+        <div class="void-option" data-void="past">
+          <div class="void-icon" id="icon-past">
+            <svg viewBox="0 0 40 40" width="40" height="40">
+              <defs>
+                <radialGradient id="past-grad" cx="50%" cy="50%" r="60%">
+                  <stop offset="0%" stop-color="#3a3020"/>
+                  <stop offset="100%" stop-color="#0a0805"/>
+                </radialGradient>
+              </defs>
+              <rect width="40" height="40" fill="url(#past-grad)"/>
+              <rect x="8" y="10" width="24" height="20" fill="#1a1408" stroke="#5a4a30" stroke-width="0.3"/>
+              <rect x="10" y="12" width="20" height="16" fill="#d4b896" opacity="0.45"/>
+              <rect x="11" y="14" width="18" height="0.6" fill="#5a4a30" opacity="0.5"/>
+              <rect x="11" y="17" width="14" height="0.6" fill="#5a4a30" opacity="0.4"/>
+              <rect x="11" y="20" width="16" height="0.6" fill="#5a4a30" opacity="0.5"/>
+              <rect x="11" y="23" width="12" height="0.6" fill="#5a4a30" opacity="0.4"/>
+            </svg>
+          </div>
+          <div class="void-meta">
+            <div class="void-name">the past</div>
+            <div class="void-desc">fade in place like an old photograph</div>
+          </div>
+        </div>
+      </div>
+      <div class="picker-back">
+        <button class="btn btn-solid" id="confirm-void">launch →</button>
+      </div>
+    </div>
+
+    <!-- ===== Screen 4: Launching ===== -->
+    <div class="screen" id="launch">
+      <svg class="launch-stars" id="launch-stars" viewBox="0 0 380 820" preserveAspectRatio="none"></svg>
+      <div class="ornament">⋆ &nbsp; LAUNCHING &nbsp; ⋆</div>
+      <div id="word-stage"></div>
+    </div>
+
+    <!-- ===== Screen 5: Afterglow ===== -->
+    <div class="screen" id="afterglow">
+      <div class="quote" id="afterglow-quote">gone now.<br/>the dark holds it.</div>
+      <div class="small">your words were never stored. not by us. not by anyone.</div>
+      <div class="glimpse" id="glimpse-card">
+        <div class="glimpse-label">A YELL DRIFTED PAST</div>
+        <div class="glimpse-text" id="glimpse-text">"...i'm not the only..."</div>
+      </div>
+      <div class="actions">
+        <button class="btn btn-outline" data-go="compose">again</button>
+        <button class="btn btn-ghost" data-go="home">enough for now</button>
+      </div>
+    </div>
+
+    <!-- ===== Screen 6: Crisis Fork ===== -->
+    <div class="screen" id="crisis">
+      <div class="heard">heard.</div>
+      <div class="body">the void is old. it has watched many people through nights like this one.<br/><br/>it cannot help you.<br/>but a person can.</div>
+      <div class="actions">
+        <button class="btn btn-solid" data-go="resource">if you want a person</button>
+        <button class="btn btn-outline" data-go="home">stay in the void</button>
+      </div>
+    </div>
+
+    <!-- ===== Screen 7: Resource ===== -->
+    <div class="screen" id="resource">
+      <button class="crumb-back" data-go="home">← back to the void</button>
+      <div class="lead">a real human is at the other end. they have heard things like this before.</div>
+      <div class="number-card">
+        <div class="num-label">CALL OR TEXT</div>
+        <div class="num">988</div>
+        <div class="num-sub">suicide &amp; crisis lifeline · 24/7</div>
+      </div>
+      <div class="chat">
+        <div class="num-label">CHAT ONLINE</div>
+        <div class="chat-link">988lifeline.org/chat →</div>
+      </div>
+      <div class="footer-note">these are not run by us.<br/>we do not see if you tap them.</div>
+    </div>
+
+    <!-- ===== Screen 8: Settings ===== -->
+    <div class="screen" id="settings">
+      <div class="topbar">
+        <button class="crumb" data-go="home">← back</button>
+        <span>SETTINGS</span>
+        <span style="visibility:hidden;">&nbsp;</span>
+      </div>
+      <div class="settings-list">
+        <div class="row"><span>how the void works</span><span class="arr">→</span></div>
+        <div class="row"><span>privacy proof</span><span class="arr">→</span></div>
+        <div class="row"><span>what the void sees</span><span class="arr">→</span></div>
+        <div class="row"><span>support the void</span><span class="arr">→</span></div>
+        <div class="row"><span>if you ever need a person</span><span class="arr">→</span></div>
+      </div>
+      <div class="footnote">v1.0 prototype<br/>nothing is saved. ever.</div>
+    </div>
+
+    <!-- ===== Screen 9: Constellation (rare) ===== -->
+    <div class="screen" id="constellation">
+      <svg class="const-stars" id="const-bg-stars" viewBox="0 0 380 820" preserveAspectRatio="none"></svg>
+      <div class="rare-tag">⋆ &nbsp; RARE &nbsp; ⋆</div>
+      <div class="rare-sub">1 IN 100 YELLS</div>
+      <div class="const-svg-wrap">
+        <svg class="const-svg" id="const-svg" viewBox="0 0 380 360" preserveAspectRatio="xMidYMid meet"></svg>
+      </div>
+      <div class="const-bottom">
+        <div class="const-label">YOUR WORDS BECAME A CONSTELLATION</div>
+        <div class="const-name" id="const-name">The Tired One</div>
+        <div class="const-meta" id="const-meta">visible from april 28th, 2026 — once</div>
+        <div class="const-actions">
+          <button class="btn btn-const" data-go="home">screenshot before it fades</button>
+          <div class="countdown" id="const-countdown">fading in 00:10</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="dev-hint"><span>prototype · all data is local · refresh to reset</span></div>
+
+<script>
+// ============================================================
+// THE VOID — interactive prototype
+// All processing is local. Nothing leaves this device.
+// ============================================================
+
+// ---------- Star field generation ----------
+function makeStars(svg, count, opts = {}) {
+  const w = 380, h = 820;
+  const min = opts.min || 0.3, max = opts.max || 1.0;
+  const minR = opts.minR || 0.4, maxR = opts.maxR || 1.0;
+  let html = '';
+  for (let i = 0; i < count; i++) {
+    const x = Math.random() * w;
+    const y = Math.random() * h;
+    const r = minR + Math.random() * (maxR - minR);
+    const o = min + Math.random() * (max - min);
+    html += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(2)}" opacity="${o.toFixed(2)}"/>`;
+  }
+  svg.innerHTML = html;
+}
+makeStars(document.getElementById('bg-stars'), 36);
+makeStars(document.getElementById('launch-stars'), 50, { min: 0.4, max: 0.9 });
+
+// Subtle twinkle on background stars
+function twinkle() {
+  const stars = document.querySelectorAll('#bg-stars circle');
+  stars.forEach((s, i) => {
+    const baseO = parseFloat(s.getAttribute('opacity'));
+    const phase = i * 0.7;
+    const t = Date.now() / 1000;
+    const wob = 0.85 + 0.15 * Math.sin(t * 0.5 + phase);
+    s.setAttribute('opacity', (baseO * wob).toFixed(2));
+  });
+  requestAnimationFrame(twinkle);
+}
+twinkle();
+
+// ---------- Navigation ----------
+const screens = ['promise', 'home', 'compose', 'launch', 'afterglow', 'crisis', 'resource', 'settings'];
+let current = 'promise';
+
+function go(name) {
+  if (name === current) return;
+  // Cleanup hook: leaving constellation cancels its countdown
+  if (current === 'constellation' && name !== 'constellation') {
+    if (typeof resetConstellation === 'function') resetConstellation();
+  }
+  const fromEl = document.getElementById(current);
+  const toEl = document.getElementById(name);
+  if (!toEl) return;
+  fromEl.classList.add('fading');
+  fromEl.classList.remove('active');
+  setTimeout(() => {
+    fromEl.classList.remove('fading');
+    toEl.classList.add('active');
+    current = name;
+    // focus textarea on compose
+    if (name === 'compose') {
+      setTimeout(() => document.getElementById('yell-input').focus(), 400);
+    }
+  }, 200);
+}
+
+document.querySelectorAll('[data-go]').forEach(el => {
+  el.addEventListener('click', () => go(el.getAttribute('data-go')));
+});
+
+// Live counter on home — drifts upward
+let yellCount = 847293;
+const counterEl = document.getElementById('yell-count');
+function bumpCounter() {
+  yellCount += Math.floor(Math.random() * 4) + 1;
+  counterEl.textContent = yellCount.toLocaleString('en-US');
+  setTimeout(bumpCounter, 1800 + Math.random() * 2400);
+}
+bumpCounter();
+
+// ---------- Compose enable/disable ----------
+const yellInput = document.getElementById('yell-input');
+const launchBtn = document.getElementById('launch-btn');
+yellInput.addEventListener('input', () => {
+  const has = yellInput.value.trim().length > 0;
+  launchBtn.disabled = !has;
+  launchBtn.style.opacity = has ? '1' : '0.4';
+});
+
+// ---------- THE VOID'S VOICE ----------
+// Procedural copy generator. All on-device.
+const voicePool = {
+  // Generic post-launch acknowledgments
+  generic: [
+    "gone now.",
+    "the dark holds it.",
+    "it's not yours anymore.",
+    "carry on.",
+    "heard.",
+    "that one had weight.",
+    "released.",
+    "the night is wider now.",
+    "enough for the moment.",
+    "spoken. dispersed.",
+    "the void is patient.",
+    "felt. let go.",
+  ],
+  // Slightly more poetic tier
+  poetic: [
+    "the universe expanded a little to make room for that.",
+    "tomorrow exists. that is all it has to do.",
+    "old as it is, the dark still listens.",
+    "it took weight to say that.",
+    "the stars shifted. only a little.",
+    "many have stood here. you are not the first.",
+    "a small comet, gone where comets go.",
+    "the void received what it could.",
+  ],
+  // Long/heavy yells
+  heavy: [
+    "that was a lot. it is held.",
+    "a heavy one. the dark is wide enough.",
+    "carried. you can rest a moment.",
+    "the weight is no longer in your hands.",
+  ],
+  // Short/quick yells
+  short: [
+    "noted.",
+    "small. still gone.",
+    "quick and clean.",
+    "a flicker, dispersed.",
+  ],
+  // Late night (after 10pm local)
+  lateNight: [
+    "sleep is allowed.",
+    "the night will end.",
+    "rest, if you can.",
+    "the dark is on your side tonight.",
+  ],
+  // Repeat session (3+ yells in a row)
+  repeat: [
+    "again. okay.",
+    "this is the kind of week, isn't it.",
+    "still here. so are you.",
+    "another. fine. say what you need.",
+  ],
+};
+
+const glimpses = [
+  '"...i\'m not the only..."',
+  '"...he never even noticed when I..."',
+  '"...just one quiet day, that\'s all I..."',
+  '"...maybe tomorrow I\'ll feel..."',
+  '"...nobody asked how I was..."',
+  '"...trying so hard and it\'s still..."',
+  '"...the same dream again, I keep..."',
+  '"...told her everything except the..."',
+  '"...some days the small things..."',
+  '"...if I could just say it out..."',
+  '"...everyone keeps acting like nothing..."',
+  '"...I miss who I was before..."',
+];
+
+// Crisis classifier — local, simple, deliberate
+// Looks for explicit, unambiguous signals only.
+// False positives are catastrophic; bar is high.
+function detectsCrisis(text) {
+  const t = text.toLowerCase();
+  // Phrases that suggest immediate, explicit intent
+  const triggers = [
+    'kill myself', 'end my life', 'want to die', 'going to die tonight',
+    'suicide', 'suicidal', 'end it tonight', 'end it all tonight',
+    'don\'t want to be alive', "don't want to live",
+    'plan to die', 'going to hurt myself',
+    'cut myself', 'overdose', 'jump off',
+    'no reason to live', 'better off dead',
+  ];
+  return triggers.some(p => t.includes(p));
+}
+
+function pickFragment(pools) {
+  const flat = pools.flat();
+  return flat[Math.floor(Math.random() * flat.length)];
+}
+
+function generateVoice(yellText) {
+  const len = yellText.length;
+  const pools = [voicePool.generic];
+
+  // Heavy if long
+  if (len > 200) pools.push(voicePool.heavy);
+  // Short if brief
+  if (len < 30) pools.push(voicePool.short);
+  // Late night context
+  const hr = new Date().getHours();
+  if (hr >= 22 || hr <= 4) pools.push(voicePool.lateNight);
+  // Repeat session
+  if (sessionYellCount >= 3) pools.push(voicePool.repeat);
+  // Roll for poetic tier (~15%)
+  if (Math.random() < 0.15) pools.push(voicePool.poetic, voicePool.poetic);
+
+  // Sometimes combine two fragments
+  if (Math.random() < 0.4) {
+    const a = pickFragment([voicePool.generic]);
+    const b = pickFragment(pools);
+    if (a !== b) return a + '<br/>' + b;
+  }
+  return pickFragment(pools);
+}
+
+// ---------- THE LAUNCH ANIMATION ----------
+let sessionYellCount = 0;
+const wordStage = document.getElementById('word-stage');
+
+function tokenize(text) {
+  // Break into words while preserving short phrases
+  const words = text.trim().split(/\s+/);
+  // Group into chunks of 1-3 words for visual rhythm
+  const chunks = [];
+  let i = 0;
+  while (i < words.length) {
+    const size = words.length - i <= 2 ? words.length - i : (Math.random() < 0.5 ? 2 : (Math.random() < 0.5 ? 1 : 3));
+    chunks.push(words.slice(i, i + size).join(' '));
+    i += size;
+  }
+  return chunks;
+}
+
+// ============================================================
+// LAUNCH ANIMATIONS — one per void destination
+// Each function receives the chunks and the stage dimensions,
+// and animates the particles. All return a duration in ms so
+// the caller knows when to advance to afterglow.
+// ============================================================
+
+function animateSpace(chunks, stageW, stageH) {
+  chunks.forEach((chunk, idx) => {
+    const el = document.createElement('div');
+    el.className = 'word-particle';
+    el.textContent = chunk;
+    const startX = stageW / 2 + (Math.random() - 0.5) * 60;
+    const startY = stageH * 0.78 + (Math.random() - 0.5) * 30;
+    const endX = stageW / 2 + (Math.random() - 0.5) * 200;
+    const endY = stageH * 0.18 + (Math.random() - 0.5) * 80;
+    const startSize = 14 + Math.random() * 6;
+    const endSize = 4;
+    el.style.left = startX + 'px';
+    el.style.top = startY + 'px';
+    el.style.fontSize = startSize + 'px';
+    el.style.opacity = '0';
+    wordStage.appendChild(el);
+    const delay = idx * 60;
+    const duration = 2400 + Math.random() * 800;
+    requestAnimationFrame(() => {
+      el.style.transition = 'none';
+      setTimeout(() => {
+        el.style.transition =
+          `transform ${duration}ms cubic-bezier(.2,.6,.2,1), ` +
+          `opacity ${duration}ms ease-out, font-size ${duration}ms cubic-bezier(.2,.6,.2,1)`;
+        el.style.opacity = '0.95';
+        el.style.fontSize = endSize + 'px';
+        el.style.transform =
+          `translate(-50%, -50%) translate(${endX - startX}px, ${endY - startY}px)`;
+        setTimeout(() => { el.style.opacity = '0'; }, duration * 0.6);
+      }, delay);
+    });
+  });
+  return 2400 + chunks.length * 60 + 400;
+}
+
+function animateOcean(chunks, stageW, stageH) {
+  // Words start near the top, sink slowly with sideways drift, dissolve into bubbles
+  chunks.forEach((chunk, idx) => {
+    const el = document.createElement('div');
+    el.className = 'word-particle';
+    el.textContent = chunk;
+    const startX = stageW / 2 + (Math.random() - 0.5) * 100;
+    const startY = stageH * 0.22 + (Math.random() - 0.5) * 30;
+    const drift = (Math.random() - 0.5) * 220; // sideways drift
+    const sinkY = stageH * 0.85 + (Math.random() - 0.5) * 40;
+    const startSize = 15 + Math.random() * 5;
+    const endSize = 7;
+    el.style.left = startX + 'px';
+    el.style.top = startY + 'px';
+    el.style.fontSize = startSize + 'px';
+    el.style.opacity = '0';
+    wordStage.appendChild(el);
+    const delay = idx * 90;
+    const duration = 3200 + Math.random() * 600;
+    requestAnimationFrame(() => {
+      el.style.transition = 'none';
+      setTimeout(() => {
+        el.style.transition =
+          `transform ${duration}ms cubic-bezier(.4,0,.6,1), ` +
+          `opacity ${duration}ms ease-out, font-size ${duration}ms ease-out`;
+        el.style.opacity = '0.85';
+        el.style.fontSize = endSize + 'px';
+        el.style.transform =
+          `translate(-50%, -50%) translate(${drift}px, ${sinkY - startY}px) rotate(${(Math.random()-0.5)*20}deg)`;
+        setTimeout(() => { el.style.opacity = '0'; }, duration * 0.65);
+        // spawn a couple bubbles where the word fades
+        setTimeout(() => spawnBubble(startX + drift, sinkY), duration * 0.55);
+        setTimeout(() => spawnBubble(startX + drift + (Math.random()-0.5)*20, sinkY - 10), duration * 0.7);
+      }, delay);
+    });
+  });
+  // Ambient bubbles rising
+  for (let i = 0; i < 14; i++) {
+    setTimeout(() => spawnBubble(Math.random() * stageW, stageH + 20), i * 220);
+  }
+  return 3200 + chunks.length * 90 + 600;
+}
+
+function spawnBubble(x, y) {
+  const b = document.createElement('div');
+  b.className = 'bubble';
+  const size = 4 + Math.random() * 12;
+  b.style.width = size + 'px';
+  b.style.height = size + 'px';
+  b.style.left = x + 'px';
+  b.style.top = y + 'px';
+  b.style.opacity = '0';
+  b.style.transform = 'translate(-50%, -50%)';
+  wordStage.appendChild(b);
+  const riseDistance = 100 + Math.random() * 200;
+  const wobble = (Math.random() - 0.5) * 40;
+  const dur = 2000 + Math.random() * 1500;
+  requestAnimationFrame(() => {
+    b.style.transition = `transform ${dur}ms ease-out, opacity ${dur}ms ease-in-out`;
+    b.style.opacity = '0.6';
+    b.style.transform = `translate(-50%, -50%) translate(${wobble}px, -${riseDistance}px)`;
+    setTimeout(() => { b.style.opacity = '0'; }, dur * 0.7);
+  });
+}
+
+function animateVolcano(chunks, stageW, stageH) {
+  // Words rise from bottom, glow warm, scatter and burn out
+  chunks.forEach((chunk, idx) => {
+    const el = document.createElement('div');
+    el.className = 'word-particle';
+    el.textContent = chunk;
+    const startX = stageW / 2 + (Math.random() - 0.5) * 80;
+    const startY = stageH * 0.92;
+    const driftX = (Math.random() - 0.5) * 240;
+    const endY = stageH * 0.15 + (Math.random() - 0.5) * 60;
+    const startSize = 16 + Math.random() * 5;
+    const endSize = 5;
+    el.style.left = startX + 'px';
+    el.style.top = startY + 'px';
+    el.style.fontSize = startSize + 'px';
+    el.style.opacity = '0';
+    wordStage.appendChild(el);
+    const delay = idx * 70;
+    const duration = 2600 + Math.random() * 700;
+    requestAnimationFrame(() => {
+      el.style.transition = 'none';
+      setTimeout(() => {
+        el.style.transition =
+          `transform ${duration}ms cubic-bezier(.3,.7,.3,1), ` +
+          `opacity ${duration}ms ease-out, font-size ${duration}ms ease-out`;
+        el.style.opacity = '0.95';
+        el.style.fontSize = endSize + 'px';
+        el.style.transform =
+          `translate(-50%, -50%) translate(${driftX}px, ${endY - startY}px) rotate(${(Math.random()-0.5)*30}deg)`;
+        setTimeout(() => { el.style.opacity = '0'; }, duration * 0.55);
+      }, delay);
+    });
+  });
+  // Continuous embers
+  let emberCount = 0;
+  const emberInterval = setInterval(() => {
+    if (emberCount++ > 60) { clearInterval(emberInterval); return; }
+    spawnEmber(stageW, stageH);
+  }, 60);
+  return 2600 + chunks.length * 70 + 500;
+}
+
+function spawnEmber(stageW, stageH) {
+  const e = document.createElement('div');
+  e.className = 'ember';
+  const size = 2 + Math.random() * 3;
+  e.style.width = size + 'px';
+  e.style.height = size + 'px';
+  const startX = stageW / 2 + (Math.random() - 0.5) * 120;
+  e.style.left = startX + 'px';
+  e.style.top = stageH * 0.95 + 'px';
+  e.style.opacity = '0.9';
+  e.style.transform = 'translate(-50%, -50%)';
+  wordStage.appendChild(e);
+  const driftX = (Math.random() - 0.5) * 200;
+  const riseY = -(stageH * 0.5 + Math.random() * stageH * 0.3);
+  const dur = 1600 + Math.random() * 1200;
+  requestAnimationFrame(() => {
+    e.style.transition = `transform ${dur}ms cubic-bezier(.3,.7,.3,1), opacity ${dur}ms ease-out`;
+    e.style.transform = `translate(-50%, -50%) translate(${driftX}px, ${riseY}px)`;
+    e.style.opacity = '0';
+  });
+  setTimeout(() => e.remove(), dur + 200);
+}
+
+function animateBlackhole(chunks, stageW, stageH) {
+  // Words spiral inward toward the center, stretch, vanish
+  const cx = stageW / 2;
+  const cy = stageH * 0.45;
+  chunks.forEach((chunk, idx) => {
+    const el = document.createElement('div');
+    el.className = 'word-particle';
+    el.textContent = chunk;
+    // Start positions spread around the periphery
+    const angle = (idx / chunks.length) * Math.PI * 2 + Math.random() * 0.6;
+    const radius = 180 + Math.random() * 80;
+    const startX = cx + Math.cos(angle) * radius;
+    const startY = cy + Math.sin(angle) * radius;
+    const startSize = 14 + Math.random() * 4;
+    el.style.left = startX + 'px';
+    el.style.top = startY + 'px';
+    el.style.fontSize = startSize + 'px';
+    el.style.opacity = '0';
+    el.style.zIndex = '3';
+    wordStage.appendChild(el);
+    const delay = idx * 80;
+    const duration = 2800 + Math.random() * 400;
+    // Multi-phase: appear, spiral in
+    requestAnimationFrame(() => {
+      el.style.transition = 'none';
+      setTimeout(() => {
+        // Phase 1: fade in and start orbiting slightly inward
+        el.style.transition = `opacity 600ms ease-out`;
+        el.style.opacity = '0.95';
+        // Phase 2: spiral & stretch toward center
+        setTimeout(() => {
+          el.style.transition =
+            `transform ${duration}ms cubic-bezier(.5,0,1,.5), ` +
+            `opacity ${duration}ms ease-in, font-size ${duration}ms ease-in`;
+          el.style.fontSize = '4px';
+          // Final spiral angle adds rotation toward center
+          const finalAngle = angle + Math.PI * 1.5; // 270° spiral
+          const finalRadius = 4;
+          const endX = cx + Math.cos(finalAngle) * finalRadius;
+          const endY = cy + Math.sin(finalAngle) * finalRadius;
+          el.style.transform =
+            `translate(-50%, -50%) translate(${endX - startX}px, ${endY - startY}px) ` +
+            `rotate(${finalAngle * 180 / Math.PI}deg) scaleX(2.5)`;
+          el.style.opacity = '0';
+        }, 400);
+      }, delay);
+    });
+  });
+  return 3400 + chunks.length * 80;
+}
+
+function animatePast(chunks, stageW, stageH) {
+  // Words appear in place like an old photo developing, then fade like sun-bleached paper
+  chunks.forEach((chunk, idx) => {
+    const el = document.createElement('div');
+    el.className = 'word-particle';
+    el.textContent = chunk;
+    // Stagger positions naturally throughout the screen
+    const startX = stageW / 2 + (Math.random() - 0.5) * 220;
+    const startY = stageH * 0.25 + (idx * 50) + (Math.random() - 0.5) * 20;
+    const size = 13 + Math.random() * 4;
+    el.style.left = startX + 'px';
+    el.style.top = startY + 'px';
+    el.style.fontSize = size + 'px';
+    el.style.opacity = '0';
+    el.style.transform = 'translate(-50%, -50%) scale(1)';
+    wordStage.appendChild(el);
+    const delay = idx * 200; // slow appearance
+    const duration = 1800;
+    const fadeDelay = 1800 + chunks.length * 200; // wait until all visible
+    requestAnimationFrame(() => {
+      el.style.transition = 'none';
+      // Phase 1: develop in
+      setTimeout(() => {
+        el.style.transition = `opacity ${duration}ms ease-in`;
+        el.style.opacity = '0.85';
+      }, delay);
+      // Phase 2: bleach out
+      setTimeout(() => {
+        el.style.transition = `opacity 2200ms ease-out, filter 2200ms ease-out, transform 2200ms ease-out`;
+        el.style.opacity = '0';
+        el.style.filter = 'blur(2px) sepia(1)';
+        el.style.transform = 'translate(-50%, -50%) scale(1.05)';
+      }, fadeDelay);
+    });
+  });
+  return chunks.length * 200 + 2200 + 1800;
+}
+
+const animations = {
+  space: animateSpace,
+  ocean: animateOcean,
+  volcano: animateVolcano,
+  blackhole: animateBlackhole,
+  past: animatePast,
+};
+
+const ornamentLabels = {
+  space: '⋆ \u00a0 LAUNCHING \u00a0 ⋆',
+  ocean: '~ \u00a0 SINKING \u00a0 ~',
+  volcano: '⌃ \u00a0 BURNING \u00a0 ⌃',
+  blackhole: '◯ \u00a0 PULLING \u00a0 ◯',
+  past: '⌗ \u00a0 FADING \u00a0 ⌗',
+};
+
+function launch(yellText, voidType) {
+  voidType = voidType || 'space';
+  sessionYellCount++;
+  const chunks = tokenize(yellText);
+  const isCrisis = detectsCrisis(yellText);
+
+  // Clear prior particles
+  wordStage.innerHTML = '';
+
+  // Update the ornament label
+  const ornament = document.querySelector('#launch .ornament');
+  if (ornament) ornament.textContent = ornamentLabels[voidType] || ornamentLabels.space;
+
+  const stageW = 380;
+  const stageH = 820;
+
+  // Dispatch to the chosen animation
+  const animFn = animations[voidType] || animations.space;
+  const totalDuration = animFn(chunks, stageW, stageH);
+
+  // After animation, transition to afterglow, crisis, or constellation
+  setTimeout(() => {
+    if (isCrisis) {
+      go('crisis');
+      sessionYellCount = 0;
+    } else if (Math.random() < CONSTELLATION_RATE) {
+      // RARE: words become a constellation
+      renderConstellation(yellText);
+      go('constellation');
+      sessionYellCount = 0;
+    } else {
+      // Set the void's voice
+      const quote = generateVoice(yellText);
+      document.getElementById('afterglow-quote').innerHTML = quote;
+      // Random glimpse, ~50% of the time
+      const glimpseEl = document.getElementById('glimpse-card');
+      if (Math.random() < 0.55) {
+        glimpseEl.style.display = 'block';
+        document.getElementById('glimpse-text').textContent =
+          glimpses[Math.floor(Math.random() * glimpses.length)];
+      } else {
+        glimpseEl.style.display = 'none';
+      }
+      go('afterglow');
+    }
+    // Clear the input for next time
+    yellInput.value = '';
+    launchBtn.disabled = true;
+    launchBtn.style.opacity = '0.4';
+    // Bump global counter
+    yellCount += 1;
+    counterEl.textContent = yellCount.toLocaleString('en-US');
+  }, totalDuration);
+}
+
+// ============================================================
+// CONSTELLATION — the rare easter egg
+// In production: 1 in 100. In this prototype: 1 in 8 so you can feel it.
+// ============================================================
+const CONSTELLATION_RATE = 0.12;
+
+// Procedural constellation naming: pulled from emotional shape of yell.
+// All on-device, content discarded after naming.
+const constellationNames = {
+  tired: ["The Tired One", "She Who Carried Too Much", "The Long Shift", "The One Still Awake"],
+  angry: ["The Furious", "The Reckoning", "She Who Refuses", "The Last Straw"],
+  sad: ["The Almost-Crying", "The Quiet Mourner", "The One Who Misses", "The Soft Collapse"],
+  lonely: ["The Unread Message", "The One Who Waits", "The Empty Chair", "The Half-Conversation"],
+  worried: ["The Catastrophizer", "The What-If", "The Sleepless", "The Predictor of Doom"],
+  hopeful: ["The Almost-Smiling", "The Tentative", "The First Crocus", "The One Who Tries Again"],
+  generic: ["The Witness", "The One Who Spoke", "The Released", "The Small Comet", "The Whispering"],
+};
+
+function classifyMood(text) {
+  const t = text.toLowerCase();
+  if (/(tired|exhaust|done|drained|spent|wiped)/.test(t)) return 'tired';
+  if (/(angry|furious|hate|pissed|fed up|rage)/.test(t)) return 'angry';
+  if (/(sad|cry|miss|lost|grief|ache|hurt)/.test(t)) return 'sad';
+  if (/(alone|lonely|nobody|no one|empty|isolat)/.test(t)) return 'lonely';
+  if (/(worry|worri|anxious|scared|afraid|nervous|stress)/.test(t)) return 'worried';
+  if (/(hope|maybe|trying|better|tomorrow|chance)/.test(t)) return 'hopeful';
+  return 'generic';
+}
+
+function generateConstellationName(yellText) {
+  const mood = classifyMood(yellText);
+  const pool = constellationNames[mood] || constellationNames.generic;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function renderConstellation(yellText) {
+  // Pull letters from the yell — only meaningful characters
+  const letters = yellText.replace(/[^a-z]/gi, '').toLowerCase().split('');
+  // Pick 7-9 anchor letters, evenly spaced through the yell
+  const anchorCount = Math.min(8, Math.max(6, Math.floor(letters.length / 8)));
+  const picked = [];
+  for (let i = 0; i < anchorCount; i++) {
+    const idx = Math.floor((i / anchorCount) * letters.length);
+    picked.push(letters[idx] || '·');
+  }
+
+  // Generate constellation point positions in a roughly natural distribution
+  // Avoid edges, cluster slightly toward center
+  const W = 380, H = 360;
+  const points = [];
+  for (let i = 0; i < anchorCount; i++) {
+    points.push({
+      x: 60 + Math.random() * (W - 120),
+      y: 50 + Math.random() * (H - 100),
+    });
+  }
+  // Sort by approximate distance from a central spine to make line connections feel intentional
+  points.sort((a, b) => (a.y - b.y) + (a.x - b.x) * 0.3);
+
+  // Build the SVG: stars + connecting lines + letters
+  const svg = document.getElementById('const-svg');
+  let html = '';
+
+  // Background scattered stars (decorative, not part of the constellation)
+  for (let i = 0; i < 18; i++) {
+    const sx = Math.random() * W;
+    const sy = Math.random() * H;
+    const sr = 0.3 + Math.random() * 0.6;
+    const so = 0.3 + Math.random() * 0.4;
+    html += `<circle cx="${sx.toFixed(1)}" cy="${sy.toFixed(1)}" r="${sr.toFixed(2)}" fill="#fff" opacity="${so.toFixed(2)}"/>`;
+  }
+
+  // Connecting lines — link each point to the next one
+  for (let i = 0; i < points.length - 1; i++) {
+    const a = points[i], b = points[i + 1];
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    html += `<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" class="const-line" style="stroke-dasharray: ${len.toFixed(0)}; stroke-dashoffset: ${len.toFixed(0)}; animation-delay: ${(0.3 + i * 0.15).toFixed(2)}s;"/>`;
+  }
+  // Add one occasional branching line for asymmetry
+  if (points.length > 4 && Math.random() < 0.7) {
+    const a = points[Math.floor(points.length / 2)];
+    const b = points[points.length - 2];
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    html += `<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" class="const-line" style="stroke-dasharray: ${len.toFixed(0)}; stroke-dashoffset: ${len.toFixed(0)}; animation-delay: 1.6s;"/>`;
+  }
+
+  // Glow halos behind anchor points (a few of them)
+  points.forEach((pt, i) => {
+    if (i % 2 === 0) {
+      html += `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="6" class="const-glow" style="animation-delay: ${(1.8 + i * 0.05).toFixed(2)}s;"/>`;
+    }
+  });
+
+  // Anchor stars + letters
+  points.forEach((pt, i) => {
+    const r = 2.2 + Math.random() * 1.2;
+    html += `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="${r.toFixed(2)}" class="const-anchor" opacity="0" style="animation: glow-in 0.5s ${(1.5 + i * 0.08).toFixed(2)}s forwards;"/>`;
+    // Letter offset so it doesn't sit ON the star
+    const lx = pt.x + 8;
+    const ly = pt.y + 4;
+    html += `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" class="const-letter" style="animation-delay: ${(2 + i * 0.1).toFixed(2)}s;">${picked[i]}</text>`;
+  });
+
+  svg.innerHTML = html;
+
+  // Set the name + date
+  const name = generateConstellationName(yellText);
+  document.getElementById('const-name').textContent = name;
+  const today = new Date();
+  const month = ['january','february','march','april','may','june','july','august','september','october','november','december'][today.getMonth()];
+  const dayNum = today.getDate();
+  const suffix = (n) => {
+    if (n >= 11 && n <= 13) return 'th';
+    switch (n % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
+  };
+  const year = today.getFullYear();
+  document.getElementById('const-meta').textContent =
+    `visible from ${month} ${dayNum}${suffix(dayNum)}, ${year} — once`;
+
+  // Render decorative background stars on the constellation screen
+  makeStars(document.getElementById('const-bg-stars'), 28, { min: 0.3, max: 0.7 });
+
+  // Start the countdown — purely visual, doesn't actually force navigation
+  let secsLeft = 10;
+  const cd = document.getElementById('const-countdown');
+  cd.textContent = `fading in 00:${String(secsLeft).padStart(2, '0')}`;
+  if (window._constInterval) clearInterval(window._constInterval);
+  window._constInterval = setInterval(() => {
+    secsLeft--;
+    if (secsLeft <= 0) {
+      clearInterval(window._constInterval);
+      cd.textContent = 'gone.';
+      // Subtle fade of the constellation itself
+      svg.style.transition = 'opacity 2s ease';
+      svg.style.opacity = '0.15';
+    } else {
+      cd.textContent = `fading in 00:${String(secsLeft).padStart(2, '0')}`;
+    }
+  }, 1000);
+}
+
+// Reset constellation state when leaving its screen
+function resetConstellation() {
+  if (window._constInterval) clearInterval(window._constInterval);
+  const svg = document.getElementById('const-svg');
+  if (svg) {
+    svg.style.transition = 'none';
+    svg.style.opacity = '1';
+  }
+}
+
+// ---------- Void destination state ----------
+let chosenVoid = 'space'; // default
+
+// Picker option selection
+document.querySelectorAll('.void-option').forEach(opt => {
+  opt.addEventListener('click', () => {
+    document.querySelectorAll('.void-option').forEach(o => o.classList.remove('selected'));
+    opt.classList.add('selected');
+    chosenVoid = opt.getAttribute('data-void');
+  });
+});
+
+// Compose's "choose destination" -> picker
+launchBtn.addEventListener('click', () => {
+  if (launchBtn.disabled) return;
+  const text = yellInput.value.trim();
+  if (!text) return;
+  go('picker');
+});
+
+// Picker's "launch" -> actual launch
+document.getElementById('confirm-void').addEventListener('click', () => {
+  const text = yellInput.value.trim();
+  if (!text) return;
+  // Apply theme class to launch screen
+  const launchScreen = document.getElementById('launch');
+  launchScreen.className = 'screen';
+  if (chosenVoid !== 'space') {
+    launchScreen.classList.add('theme-' + chosenVoid);
+  }
+  go('launch');
+  setTimeout(() => launch(text, chosenVoid), 350);
+  // Try haptic
+  if (navigator.vibrate) navigator.vibrate(40);
+});
+
+// Allow Enter+Cmd/Ctrl to launch from textarea
+yellInput.addEventListener('keydown', (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+    e.preventDefault();
+    if (!launchBtn.disabled) launchBtn.click();
+  }
+});
+
+// ---------- Reset session count when returning home from afterglow ----------
+document.querySelectorAll('#afterglow [data-go="home"]').forEach(el => {
+  el.addEventListener('click', () => {
+    sessionYellCount = 0;
+  });
+});
+</script>
+
+</body>
+</html>
